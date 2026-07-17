@@ -24,3 +24,4 @@ Fully responsive canvas that scales to any screen size
 Vanilla JavaScript
 HTML5 Canvas API
 CSS3
+https://zombieslayergame.netlify.app
