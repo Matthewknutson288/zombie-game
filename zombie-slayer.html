@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zombie Slayer</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     CHARACTER SELECT SCREEN
+════════════════════════════════════════════ -->
+<div id="select-screen">
+  <h1>🧟 ZOMBIE SLAYER</h1>
+  <h2>CHOOSE YOUR FIGHTER</h2>
+  <div id="cards">
+
+    <div class="card" onclick="selectChar('paxton')">
+      <canvas id="preview-paxton" width="120" height="140"></canvas>
+      <h3>PAXTON</h3>
+      <p>Brown hair, brown eyes.<br>Balanced fighter ready<br>for anything.</p>
+      <div class="stats">
+        <div class="stat"><span>⚔️</span>ATK</div>
+        <div class="stat"><span>🛡️</span>DEF</div>
+        <div class="stat"><span>💨</span>SPD</div>
+      </div>
+      <button class="select-btn">SELECT</button>
+    </div>
+
+    <div class="card" onclick="selectChar('rosie')">
+      <canvas id="preview-rosie" width="120" height="140"></canvas>
+      <h3>ROSIE</h3>
+      <p>Pink hair, blue eyes.<br>Fast and fierce with<br>a fearless heart.</p>
+      <div class="stats">
+        <div class="stat"><span>⚔️</span>ATK</div>
+        <div class="stat"><span>💨</span>SPD+</div>
+        <div class="stat"><span>💥</span>CRIT</div>
+      </div>
+      <button class="select-btn">SELECT</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     GAME CANVAS + HUD
+════════════════════════════════════════════ -->
+<canvas id="c" style="display:none;"></canvas>
+
+<div id="ui">
+  <div>❤️ <span id="hp-txt">100</span>/<span id="hp-max-txt">100</span></div>
+  <div>⭐ Score: <span id="score-txt">0</span></div>
+  <div>🌊 Wave: <span id="wave-txt">1</span></div>
+  <div>⚠️ Dmg/hit: <span id="dmg-txt">1</span></div>
+  <div id="ammo-txt" style="color:#ffcc00;display:none;">🔫 AMMO: ∞</div>
+  <div>🪙 Coins: <span id="coins-txt">0</span></div>
+<div style="color:#aaffaa;font-size:11px;">[S] Shop</div>
+</div>
+
+<div id="shield-bar">🛡️ Shield: <span id="shield-txt">25</span>/25</div>
+
+<div id="boss-health-panel" style="display:none;">
+  <div class="boss-health-box">
+    <div id="boss-health-label" class="boss-health-label">BOSS ZOMBIE</div>
+    <div class="boss-health-track">
+      <div id="boss-health-fill" class="boss-health-fill"></div>
+    </div>
+    <div id="boss-health-value" class="boss-health-value">0 / 0</div>
+  </div>
+</div>
+
+<div id="right-ui">
+  <div id="mode-txt" style="font-weight:bold;font-family:'Fredoka One',cursive;">MODE: NORMAL</div>
+  <div id="timer-txt"></div>
+  <div id="powerup-timer-txt" style="color:#aaffaa;margin-top:4px;"></div>
+</div>
+
+<div id="bottom-ui">← → Move &nbsp;|&nbsp; SPACE Jump &nbsp;|&nbsp; Z Attack &nbsp;|&nbsp; Grab glowing power-ups!</div>
+
+<div id="powerup-flash"></div>
+<div id="kill-notify"></div>
+<div id="wave-notify"></div>
+
+<div id="gameover">
+  <h2>GAME OVER</h2>
+  <p>Score: <span id="final-score">0</span></p>
+  <button class="go-btn" onclick="restartGame()">PLAY AGAIN</button>
+  <button class="go-btn secondary" onclick="goToSelect()">CHANGE CHARACTER</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script src="game.js"></script>
+<div id="shop-overlay">
+  <div id="shop-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2>🪙 UPGRADE SHOP</h2>
+      <span id="shop-coins" style="color:#f5d020;font-size:18px;font-weight:bold;"></span>
+    </div>
+
+    <p style="color:#aaaacc;font-size:12px;margin-bottom:16px;">CHARACTER UPGRADES — cost increases each level</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <button class="shop-btn" onclick="buyUpgrade('health')">
+        ❤️ Max Health<br><small id="health-info"></small>
+      </button>
+      <button class="shop-btn" onclick="buyUpgrade('healthRegen')">
+        ♻️ Health Regen<br><small id="healthRegen-info"></small>
+      </button>
+      <button class="shop-btn" onclick="buyUpgrade('damage')">
+        ⚔️ Damage<br><small id="damage-info"></small>
+      </button>
+      <button class="shop-btn" onclick="buyUpgrade('speed')">
+        💨 Speed<br><small id="speed-info"></small>
+      </button>
+      <button class="shop-btn" onclick="buyUpgrade('jump')">
+        🦘 Jump<br><small id="jump-info"></small>
+      </button>
+      <button class="shop-btn" onclick="buyUpgrade('luck')">
+        🍀 Luck<br><small id="luck-info"></small>
+      </button>
+    </div>
+
+    <p style="color:#aaaacc;font-size:12px;margin-bottom:12px;">POWER-UP PURCHASES — each buy raises cost +2 until Lv5, then +5🪙</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('samurai')" id="btn-samurai">
+        ⚔️ Samurai <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('ninja')" id="btn-ninja">
+        🥷 Ninja <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('gunner')" id="btn-gunner">
+        🔫 Gunner <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('turtle')" id="btn-turtle">
+        🐢 Turtle <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('devil')" id="btn-devil">
+        😈 Devil <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('angel')" id="btn-angel">
+        😇 Angel <br><small>Lv 0 | Cost: 10🪙</small>
+      </button>
+      <button class="shop-btn enhanced-btn" onclick="buyEnhanced('god')" id="btn-god">
+        🌟 GOD POWER-UP <br><small>LOCKED</small></button>
+    </div>
+
+    <button class="shop-close-btn" onclick="closeShop()">CLOSE SHOP [S]</button>
+  </div>
+</div>
+</body>
+</html>
